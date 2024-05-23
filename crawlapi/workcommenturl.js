@@ -150,18 +150,14 @@ const  tiktokProfile = async(i)=>{
                             const PARAMS = {
                                 WebIdLastTime: 1704213533,
                                 aid: 1988,
-                                app_language: `ja-JP`,
                                 app_name: `tiktok_web`,
                                 aweme_id: tiktok_id_video,
-                                browser_language: `en-US`,
                                 browser_name: `Mozilla`,
                                 browser_online: true,
                                 browser_platform: `Win32`,
                                 browser_version: `5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36`,
                                 channel: `tiktok_web`,
-                                cookie_enabled: true,
                                 count: 20,
-                                current_region: `JP`,
                                 cursor: i*20,
                                 device_id: 7319541331834226178,
                                 device_platform: `web_pc`,
@@ -174,13 +170,9 @@ const  tiktokProfile = async(i)=>{
                                 is_non_personalized: false,
                                 is_page_visible: true,
                                 os:`windows`,
-                                priority_region: `VN`,
                                 referer:`` ,
-                                region: `VN`,
                                 screen_height: 1080,
                                 screen_width: 1920,
-                                tz_name: `Asia/Bangkok`,
-                                webcast_language:`en`,
                                 // msToken: "xPm5d7UAUrnPZJ8NlW0Y3tsBK9SdU19ODmjqtpvjOQoBVtuDX1sUttMxuvo6E3XatkokuTwWyGjsMiNuFVRelvcye0aIMfMpQlzBfVLNnWdGMvkbJGQXENuspBY6lGCSp6meIBo="
                                 };
                                 const qsObject = new URLSearchParams(PARAMS) ;
