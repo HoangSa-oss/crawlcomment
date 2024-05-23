@@ -9,6 +9,7 @@ const profileSchema = new Schema({
     cid:String,
     text:String,
     reply_comment_total:Number,
-    crawl_reply:Boolean
+    crawl_reply:Boolean,
+    urlPost:String,
 }, { versionKey: false })
 export default model('comment',profileSchema);

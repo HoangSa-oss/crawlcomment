@@ -19,9 +19,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const { combine, timestamp, printf } = format;
 const myFormat = printf(({ message,commentLength,cursor,has_more ,urlPost,timestamp,status_code,status_msg,total,proxy}) => {
-    return `${timestamp}| proxy:${proxy} | commentLength:${commentLength} | urlPost:${urlPost} | cursor:${cursor} | ${message}|has_more:${has_more}| status_code:${status_code}| status_msg:${status_msg}|total:${total}`;
+    return `${timestamp} | commentLength:${commentLength} | urlPost:${urlPost} | cursor:${cursor} | ${message}|has_more:${has_more}| status_code:${status_code}| status_msg:${status_msg}|total:${total}|proxy:${proxy.proxy}`;
   });
-  
+  const myFormat2 = printf(({error}) => {
+    return error;
+  });
+   
 const logger = createLogger({
     format: combine(
     format.timestamp({
@@ -36,10 +39,26 @@ const logger = createLogger({
 
     ]
   });
+  const logger2 = createLogger({
+    format: combine(
+    format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss'
+        }),
+      myFormat2
+    ),
+    
+    transports: [
+        new transports.Console(),
+        new transports.File({ filename: 'crawlapi/error.log' }),
+
+    ]
+  });
 
 const  tiktokProfile = async(i)=>{
         await delay(i*1000)
         const queueComment = new Queue('queueCommentCrawlApi','redis://127.0.0.1:6379')
+        var proxy=proxyList[i]
+       
         process.setMaxListeners(0);
             //      const browser = await puppeteer.launch({
             //      headless: false,
@@ -88,62 +107,64 @@ const  tiktokProfile = async(i)=>{
             //      };
             //      return this;
             //  });
+            const browser = await puppeteer.launch({
+                headless: false,
+                // userDataDir: '/Users/hoangsa/Library/Application Support/Google/Chrome/Profile 3',
+                args: [
+                    '--enable-features=NetworkService',
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins,site-per-process',
+                    '--shm-size=8gb', // this solves the issue
+                    '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    ],
+                    ignoreHTTPSErrors: true,
+                    executablePath:executablePath(),  
+                });
+                await delay(1000)
+                const page = await browser.newPage({});
+                await page.setBypassCSP(true)
+                await page.goto("https://www.tiktok.com/",{ })
+                await delay(5000)
+                // if(secUid=='width=1920'){
+                //     secUid = urlRes.split('&')[26].slice(7,1000000000000)
+                // }
+                let LOAD_SCRIPTS = ["signer.js", "webmssdk.js", "xbogus.js"];
+                    LOAD_SCRIPTS.forEach(async (script) => {
+                    await page.addScriptTag({
+                        path: `${__dirname}/javascript/${script}`,
+                    });
+                    // console.log("[+] " + script + " loaded");
+                });
+        
+                await page.evaluate(() => {
+                    window.generateSignature = function generateSignature(url) {
+                        if (typeof window.byted_acrawler.sign !== "function") {
+                        throw "No signature function found";
+                        }
+                        return window.byted_acrawler.sign({ url: url });
+                    };
+                    window.generateBogus = function generateBogus(params) {
+                        if (typeof window.generateBogus !== "function") {
+                        throw "No X-Bogus function found";
+                        }
+                        return window.generateBogus(params);
+                    };
+                    return this;
+                });
+                let cursor = 0
+                await delay(3000)
              queueComment.process(1,async (job,done)=>{
-                let random_index = Math.floor(Math.random() * proxyList.length);
-                let proxy = proxyList[random_index]
+                let random_await = Math.floor(Math.random() * 4);
+                
 
                try {
-                    const browser = await puppeteer.launch({
-                        headless: false,
-                        // userDataDir: '/Users/hoangsa/Library/Application Support/Google/Chrome/Profile 3',
-                        args: [
-                            '--enable-features=NetworkService',
-                            '--no-sandbox',
-                            '--disable-setuid-sandbox',
-                            '--disable-dev-shm-usage',
-                            '--disable-web-security',
-                            '--disable-features=IsolateOrigins,site-per-process',
-                            '--shm-size=8gb', // this solves the issue
-                            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                            ],
-                            ignoreHTTPSErrors: true,
-                            executablePath:executablePath(),  
-                        });
-                        await delay(1000)
-                        const page = await browser.newPage({});
+                  
                    
                     try {
-                        await page.setBypassCSP(true)
-                        await page.goto("https://www.tiktok.com/",{ })
-                        await delay(5000)
-                        // if(secUid=='width=1920'){
-                        //     secUid = urlRes.split('&')[26].slice(7,1000000000000)
-                        // }
-                        let LOAD_SCRIPTS = ["signer.js", "webmssdk.js", "xbogus.js"];
-                            LOAD_SCRIPTS.forEach(async (script) => {
-                            await page.addScriptTag({
-                                path: `${__dirname}/javascript/${script}`,
-                            });
-                            // console.log("[+] " + script + " loaded");
-                        });
-                
-                        await page.evaluate(() => {
-                            window.generateSignature = function generateSignature(url) {
-                                if (typeof window.byted_acrawler.sign !== "function") {
-                                throw "No signature function found";
-                                }
-                                return window.byted_acrawler.sign({ url: url });
-                            };
-                            window.generateBogus = function generateBogus(params) {
-                                if (typeof window.generateBogus !== "function") {
-                                throw "No X-Bogus function found";
-                                }
-                                return window.generateBogus(params);
-                            };
-                            return this;
-                        });
-                        let cursor = 0
-                        await delay(3000)
+                   
                         let tiktok_id_video = job.data.urlVideo.slice(job.data.urlVideo.indexOf('video')+6,job.data.urlVideo.indexOf('video')+6+19)
                         let conditionBreak = 0
                         for(let i=0;i<100000000;i++){
@@ -212,20 +233,22 @@ const  tiktokProfile = async(i)=>{
                                     
                                 //     }  
                                 // } else {
+                                    
                                     for(let j=0;j<2;j++){
                                         try {
                                             var res = await testApiReq({userAgent,xTtParams,signed_url,proxy})
                                            
-                                            var  data  = await res.json();
+                                            var {data} = res
                                             if(data.comments!=undefined){
                                                 break
                                             }
-                                            await delay(5000)
-                                            logger.info({timestamp,message:`comment1:${tiktok_id_video}:reroll}`,cursor:i*20,urlPost:job.data.urlVideo})
+                                            await delay(3000)
+                                            logger.info({timestamp,message:`comment1:${tiktok_id_video}:reroll}`,cursor:i*20,urlPost:job.data.urlVideo,proxy})
                                         } catch (error) {
-                                            await delay(4000)
-                                            // console.log(error)
-                                            logger.info({timestamp,message:`comment2:${tiktok_id_video}:reroll:${JSON.stringify(error)}`,cursor:i*20,urlPost:job.data.urlVideo})
+                                            await delay(3000)
+                                            console.log(error)
+                                            logger2.error({error})
+                                            logger.info({timestamp,message:`comment2:${tiktok_id_video}:reroll:${JSON.stringify(error)}`,cursor:i*20,urlPost:job.data.urlVideo,proxy})
                                         }
                                     
                                     }    
@@ -234,13 +257,13 @@ const  tiktokProfile = async(i)=>{
                                 // var res = await testApiReq({userAgent,xTtParams,signed_url})
                                 // var { data } = res;
                                 const {comments,cursor,has_more,status_code,status_msg,total} = data ?? {}
-                                logger.info({timestamp,message:`comment3:${tiktok_id_video}`,commentLength:comments?.length,cursor:i*20,has_more,urlPost:job.data.urlVideo,status_code,status_msg,total,proxy:proxy.ip})
+                                logger.info({timestamp,message:`comment3:${tiktok_id_video}`,commentLength:comments?.length,cursor:i*20,has_more,urlPost:job.data.urlVideo,status_code,status_msg,total,proxy})
                                 if(comments!=undefined){
                                     comments.map(async(item)=>{
-                                            let insert = new schemacomment({"text":item.text,"reply_comment_total":item.reply_comment_total,"vid":tiktok_id_video,"cid":item.cid,crawl_reply:false})
+                                            let insert = new schemacomment({"text":item.text,"reply_comment_total":item.reply_comment_total,"vid":tiktok_id_video,"cid":item.cid,crawl_reply:false,urlPost:job.data.urlVideo,proxy})
                                             await insert.save()
                                         }
-
+                                        // replace(/\r?\n/g, " ").trim()
                                     )
                                     conditionBreak = 0
                                 }
@@ -280,25 +303,29 @@ const  tiktokProfile = async(i)=>{
                         }  
                     } catch (error) {
                             console.log(error)
-                            logger.info({timestamp,message:`comment4:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.ip})
+                            logger2.error({error})
+
+                            logger.info({timestamp,message:`comment4:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy})
                         ;     
                     }    
             
-                try {
-                    await page.close()
-                    await browser.close()
-                } catch (error) {
-                    logger.info({timestamp,message:`comment5:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.ip})
-                    done();     
-                }
+                // try {
+                //     await page.close()
+                //     await browser.close()
+                // } catch (error) {
+                //     logger.info({timestamp,message:`comment5:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.ip})
+                //     done();     
+                // }
             } catch (error) {
-                logger.info({timestamp,message:`comment6:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.ip})
-                try {
-                    await page.close()
-                    await browser.close()
-                } catch (error) {
-                    logger.info({timestamp,message:`comment7:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.ip}) 
-                }
+                logger2.error({error})
+
+                logger.info({timestamp,message:`comment6:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy})
+                // try {
+                //     await page.close()
+                //     await browser.close()
+                // } catch (error) {
+                //     logger.info({timestamp,message:`comment7:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.ip}) 
+                // }
             }  
                 done();     
             })
@@ -306,7 +333,7 @@ const  tiktokProfile = async(i)=>{
  
    
 }
-for(let i=0;i<1;i++){
+for(let i=0;i<3;i++){
     tiktokProfile(i)  
 }
 
@@ -321,7 +348,6 @@ async function xttparams(query_str) {
     );
 }
 async function testApiReq({ userAgent,xTtParams, signed_url,proxy}) {
-  
     // const options = {
     //   method: "GET",
     //   timeout: 50000,
@@ -341,21 +367,31 @@ async function testApiReq({ userAgent,xTtParams, signed_url,proxy}) {
     //     },
     //   url: signed_url,
     // }
-    const response = await fetch(signed_url, {
-        agent: new HttpsProxyAgent({
-          keepAlive: true,
-          keepAliveMsecs: 1000,
-          maxSockets: 256,
-          maxFreeSockets: 256,
-          scheduling: 'lifo',
-          proxy: proxy.proxy
-        }),
-        headers:{
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        }
-      });
-      
-      return response
+    if(Object.keys(proxy.proxy).length==0){
+        const response = await axios(signed_url, {
+            headers:{
+                "user-agent": userAgent,
+            }
+          });
+        return response
+
+    } else{
+        const response = await axios(signed_url, {
+            userAgent: new HttpsProxyAgent({
+              keepAlive: true,
+              keepAliveMsecs: 1000,
+              maxSockets: 256,
+              maxFreeSockets: 256,
+              scheduling: 'lifo',
+              proxy: proxy.proxy
+            }),
+            headers:{
+                "user-agent": userAgent,
+            }
+          });
+        return response
+    }
+  
 }
 async function generateVerifyFp() {
     var e = Date.now();
