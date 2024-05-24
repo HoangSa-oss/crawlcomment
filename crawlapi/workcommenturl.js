@@ -12,8 +12,8 @@ import  {executablePath} from 'puppeteer'
 import {createCipheriv } from 'crypto'
 import moment from 'moment';
 import fs from 'fs/promises'
-import { createLogger, format, transports } from 'winston'
-import proxyList from './proxy.json'  assert { type: 'json' }
+import { createLogger, format, transports }from 'winston'
+import proxyList from './proxy.json' assert {type: 'json'};
 puppeteer.use(StealthPlugin());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -169,8 +169,7 @@ const  tiktokProfile = async(i)=>{
                                 is_fullscreen: false,
                                 is_non_personalized: false,
                                 is_page_visible: true,
-                                os:`windows`,
-                                referer:`` ,
+                                referer:``,
                                 screen_height: 1080,
                                 screen_width: 1920,
                                 // msToken: "xPm5d7UAUrnPZJ8NlW0Y3tsBK9SdU19ODmjqtpvjOQoBVtuDX1sUttMxuvo6E3XatkokuTwWyGjsMiNuFVRelvcye0aIMfMpQlzBfVLNnWdGMvkbJGQXENuspBY6lGCSp6meIBo="
@@ -207,7 +206,7 @@ const  tiktokProfile = async(i)=>{
                                     
                                     for(let j=0;j<2;j++){
                                         try {
-                                            var res = await testApiReq({userAgent,xTtParams,signed_url,proxy})
+                                            var res = await testApiReq({userAgent,xTtParams,signed_url,proxy,referer:job.data.urlVideo})
                                            
                                             var {data} = res
                                             if(data.comments!=undefined){
@@ -318,7 +317,7 @@ async function xttparams(query_str) {
         "base64"
     );
 }
-async function testApiReq({ userAgent,xTtParams, signed_url,proxy}) {
+async function testApiReq({ userAgent,xTtParams, signed_url,proxy,referer}) {
     // const options = {
     //   method: "GET",
     //   timeout: 50000,
@@ -340,8 +339,11 @@ async function testApiReq({ userAgent,xTtParams, signed_url,proxy}) {
     // }
     if(Object.keys(proxy.proxy).length==0){
         const response = await axios(signed_url, {
+            method: "GET",
+            timeout: 50000,
             headers:{
-                "user-agent": userAgent,
+                "User-Agent": userAgent,
+                // "Referer":referer
             }
           });
         return response
@@ -356,8 +358,11 @@ async function testApiReq({ userAgent,xTtParams, signed_url,proxy}) {
               scheduling: 'lifo',
               proxy: proxy.proxy
             }),
+            method: "GET",
+            timeout: 50000,
             headers:{
-                "user-agent": userAgent,
+                "User-Agent": userAgent,
+                // "Referer":referer
             }
           });
         return response
