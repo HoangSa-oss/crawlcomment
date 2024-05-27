@@ -18,8 +18,8 @@ puppeteer.use(StealthPlugin());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const { combine, timestamp, printf } = format;
-const myFormat = printf(({ message,commentLength,cursor,has_more ,urlPost,timestamp,status_code,status_msg,total,proxy,countQueue}) => {
-    return `${timestamp} | commentLength:${commentLength} | urlPost:${urlPost} | cursor:${cursor} | ${message}|has_more:${has_more}| status_code:${status_code}| status_msg:${status_msg}|total:${total}|proxy:${proxy.proxy}|queue:${countQueue}`;
+const myFormat = printf(({ message,commentLength,cursor,has_more ,urlPost,timestamp,statusText,status_msg,total,proxy,countQueue}) => {
+    return `${timestamp} | commentLength:${commentLength} | urlPost:${urlPost} | cursor:${cursor} |has_more:${has_more}| statusText:${statusText}| status_msg:${status_msg}|total:${total}|proxy:${proxy.proxy}|queue:${countQueue}| ${message}`;
   });
   const myFormat2 = printf(({error}) => {
     return error;
@@ -57,90 +57,96 @@ const logger = createLogger({
 const  tiktokProfile = async(i)=>{
         await delay(i*1000)
         const queueComment = new Queue('queueCommentCrawlApi','redis://127.0.0.1:6379')
-        var proxy=proxyList[i]
+        // let random_index = Math.floor(Math.random() * proxyList.length);
+        // var proxy = proxyList[random_index]
         process.setMaxListeners(0);
+        // if(Object.keys(proxy.proxy).length==0){
+        //     var browser = await puppeteer.launch({
+        //         headless: false,
+        //         // userDataDir: '/Users/hoangsa/Library/Application Support/Google/Chrome/Profile 3',
+        //         args: [
+        //             '--enable-features=NetworkService',
+        //             '--no-sandbox',
+        //             '--disable-setuid-sandbox',
+        //             '--disable-dev-shm-usage',
+        //             '--disable-web-security',
+        //             '--disable-features=IsolateOrigins,site-per-process',
+        //             '--shm-size=8gb', // this solves the issue
+        //             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        //             ],
+        //             ignoreHTTPSErrors: true,
+        //             executablePath:executablePath(),  
+        //         });
+        //         await delay(1000)
+        //         var page = await browser.newPage({});
+        //         await page.setBypassCSP(true)
+        // }else
+        // {
        
+            var browser = await puppeteer.launch({
+                headless: false,
+                userDataDir: `F:/Use/Profie${i}`,
+                args: [
+                    `--proxy-server=42.96.11.50:55555`,
+                    '--enable-features=NetworkService',
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins,site-per-process',
+                    '--shm-size=8gb', // this solves the issue
+                    '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    ],
+                    ignoreHTTPSErrors: true,
+                    executablePath:executablePath(),  
+                });
+                await delay(1000)
+                var page = await browser.newPage({});
+                var page1 = await browser.newPage({});
+                await page.authenticate({
+                    "username":"heai7r3x",
+                    "password":"hEAI7r3x"
+                    });
+                await page.setBypassCSP(true)
+                await page1.setBypassCSP(true)
+
+            // }
+           
+                await page.goto("https://www.tiktok.com/",{timeout:60000 })
+                await delay(10000)
+                // if(secUid=='width=1920'){
+                //     secUid = urlRes.split('&')[26].slice(7,1000000000000)
+                // }
+                let LOAD_SCRIPTS = ["signer.js", "webmssdk.js", "xbogus.js"];
+                    LOAD_SCRIPTS.forEach(async (script) => {
+                    await page.addScriptTag({
+                        path: `${__dirname}/javascript/${script}`,
+                    });
+                    // console.log("[+] " + script + " loaded");
+                });
+        
+                await page.evaluate(() => {
+                    window.generateSignature = function generateSignature(url) {
+                        if (typeof window.byted_acrawler.sign !== "function") {
+                        throw "No signature function found";
+                        }
+                        return window.byted_acrawler.sign({ url: url });
+                    };
+                    window.generateBogus = function generateBogus(params) {
+                        if (typeof window.generateBogus !== "function") {
+                        throw "No X-Bogus function found";
+                        }
+                        return window.generateBogus(params);
+                    };
+                    return this;
+                });
+                await delay(3000)
+         
              queueComment.process(1,async (job,done)=>{
-                const countQueue = await queueComment.count()
-                let random_await = Math.floor(Math.random() * 4);
+           
                try {
-                if(Object.keys(proxy.proxy).length==0){
-                    var browser = await puppeteer.launch({
-                        headless: false,
-                        // userDataDir: '/Users/hoangsa/Library/Application Support/Google/Chrome/Profile 3',
-                        args: [
-                            '--enable-features=NetworkService',
-                            '--no-sandbox',
-                            '--disable-setuid-sandbox',
-                            '--disable-dev-shm-usage',
-                            '--disable-web-security',
-                            '--disable-features=IsolateOrigins,site-per-process',
-                            '--shm-size=8gb', // this solves the issue
-                            '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
-                            ],
-                            ignoreHTTPSErrors: true,
-                            executablePath:executablePath(),  
-                        });
-                        await delay(1000)
-                        var page = await browser.newPage({});
-                        await page.setBypassCSP(true)
-                }else
-                {
-                    var browser = await puppeteer.launch({
-                        headless: false,
-                        // userDataDir: '/Users/hoangsa/Library/Application Support/Google/Chrome/Profile 3',
-                        args: [
-                            `--proxy-server=${proxy.server}:${proxy.port}`,
-                            '--enable-features=NetworkService',
-                            '--no-sandbox',
-                            '--disable-setuid-sandbox',
-                            '--disable-dev-shm-usage',
-                            '--disable-web-security',
-                            '--disable-features=IsolateOrigins,site-per-process',
-                            '--shm-size=8gb', // this solves the issue
-                            '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
-                            ],
-                            ignoreHTTPSErrors: true,
-                            executablePath:executablePath(),  
-                        });
-                        await delay(1000)
-                        var page = await browser.newPage({});
-                        await page.authenticate({
-                            username: proxy.username,
-                            password: proxy.password,
-                            });
-                        await page.setBypassCSP(true)
-                    }
-                   
-                        await page.goto("https://www.tiktok.com/",{ })
-                        await delay(3000)
-                        // if(secUid=='width=1920'){
-                        //     secUid = urlRes.split('&')[26].slice(7,1000000000000)
-                        // }
-                        let LOAD_SCRIPTS = ["signer.js", "webmssdk.js", "xbogus.js"];
-                            LOAD_SCRIPTS.forEach(async (script) => {
-                            await page.addScriptTag({
-                                path: `${__dirname}/javascript/${script}`,
-                            });
-                            // console.log("[+] " + script + " loaded");
-                        });
-                
-                        await page.evaluate(() => {
-                            window.generateSignature = function generateSignature(url) {
-                                if (typeof window.byted_acrawler.sign !== "function") {
-                                throw "No signature function found";
-                                }
-                                return window.byted_acrawler.sign({ url: url });
-                            };
-                            window.generateBogus = function generateBogus(params) {
-                                if (typeof window.generateBogus !== "function") {
-                                throw "No X-Bogus function found";
-                                }
-                                return window.generateBogus(params);
-                            };
-                            return this;
-                        });
-                        await delay(3000)
+          
+           
                    
                     try {
                    
@@ -150,18 +156,18 @@ const  tiktokProfile = async(i)=>{
                             const PARAMS = {
                                 WebIdLastTime: 1704213533,
                                 aid: 1988,
-                                // app_language: `ja-JP`,
+                                app_language: `ja-JP`,
                                 app_name: `tiktok_web`,
                                 aweme_id: tiktok_id_video,
                                 browser_language: `en-US`,
                                 browser_name: `Mozilla`,
                                 browser_online: true,
-                                browser_platform: `Linux x86_64`,
-                                browser_version: `5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36`,
+                                browser_platform: `Win32`,
+                                browser_version: `5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36`,
                                 channel: `tiktok_web`,
-                                // cookie_enabled: true,
+                                cookie_enabled: true,
                                 count: 20,
-                                // current_region: `JP`,
+                                current_region: `JP`,
                                 cursor: i*20,
                                 device_id: 7319541331834226178,
                                 device_platform: `web_pc`,
@@ -173,19 +179,20 @@ const  tiktokProfile = async(i)=>{
                                 is_fullscreen: false,
                                 is_non_personalized: false,
                                 is_page_visible: true,
-                                os:`linux`,
-                                // priority_region: `VN`,
+                                os:`windows`,
+                                priority_region: `VN`,
                                 referer:`` ,
                                 region: `VN`,//phai co
                                 screen_height: 1080,
                                 screen_width: 1920,
-                                // tz_name: `Asia/Bangkok`,
-                                // webcast_language:`en`,
+                                tz_name: `Asia/Bangkok`,
+                                webcast_language:`en`,
+                                // msToken:``
                                 // msToken: "xPm5d7UAUrnPZJ8NlW0Y3tsBK9SdU19ODmjqtpvjOQoBVtuDX1sUttMxuvo6E3XatkokuTwWyGjsMiNuFVRelvcye0aIMfMpQlzBfVLNnWdGMvkbJGQXENuspBY6lGCSp6meIBo="
                                 };
                                 const qsObject = new URLSearchParams(PARAMS) ;
                                 const qs = qsObject.toString();
-                                let userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                                let userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                                 const unsignedUrl = `https://www.tiktok.com/api/comment/list/?${qs}`;
                                 let verify_fp = await generateVerifyFp();
                                 let newUrl = unsignedUrl + "&verifyFp=" + verify_fp;
@@ -213,21 +220,26 @@ const  tiktokProfile = async(i)=>{
                                 //     }  
                                 // } else {
                                     
-                                    for(let j=0;j<2;j++){
+                                    for(let j=0;j<500;j++){
+                                        let random_index = Math.floor(Math.random() * proxyList.length);
+                                        var proxy = proxyList[random_index]
                                         try {
-                                            var res = await testApiReq({userAgent,xTtParams,signed_url,proxy})
-                                           
-                                            var {data} = res
-                                            if(data.comments!=undefined){
+                                            // var res = await testApiReq({userAgent,xTtParams,signed_url,referer:job.data.urlVideo})
+                                            await page1.goto(signed_url, { waitUntil: "networkidle0" })
+                                            const text = await page1.evaluate(()=>{
+                                                return document?.querySelector("body > pre")?.textContent
+                                            });
+                                            if(text!=undefined){
+                                                var data = JSON.parse(text)
                                                 break
                                             }
-                                            await delay(5000)
-                                            logger.info({timestamp,message:`comment1:${tiktok_id_video}:reroll}}`,cursor:i*20,urlPost:job.data.urlVideo,proxy,countQueue})
-                                        } catch (error) {
+                                            logger.info({timestamp,message:`comment1:${tiktok_id_video}:reroll:${text}`,cursor:i*20,urlPost:job.data.urlVideo,proxy})
                                             await delay(3000)
+                                        } catch (error) {
+                                            await delay(500)
                                             console.log(error)
                                             logger2.error({error})
-                                            logger.info({timestamp,message:`comment2:${tiktok_id_video}:reroll:${JSON.stringify(error)}`,cursor:i*20,urlPost:job.data.urlVideo,proxy,countQueue})
+                                            logger.info({timestamp,message:`comment2:${tiktok_id_video}:reroll:${text}`,cursor:i*20,urlPost:job.data.urlVideo,proxy})
                                         }
                                     
                                     }    
@@ -236,7 +248,7 @@ const  tiktokProfile = async(i)=>{
                                 // var res = await testApiReq({userAgent,xTtParams,signed_url})
                                 // var { data } = res;
                                 const {comments,cursor,has_more,status_code,status_msg,total} = data ?? {}
-                                logger.info({timestamp,message:`comment3:${tiktok_id_video}`,commentLength:comments?.length,cursor:i*20,has_more,urlPost:job.data.urlVideo,status_code,status_msg,total,proxy,countQueue})
+                                logger.info({timestamp,message:`comment3:${tiktok_id_video}:${Object.keys(data).length}`,commentLength:comments?.length,cursor:i*20,has_more,urlPost:job.data.urlVideo,status_msg,total,proxy})
                                 if(comments!=undefined){
                                     comments.map(async(item)=>{
                                             let insert = new schemacomment({"text":item.text,"reply_comment_total":item.reply_comment_total,"vid":tiktok_id_video,"cid":item.cid,crawl_reply:false,urlPost:job.data.urlVideo,proxy})
@@ -246,7 +258,7 @@ const  tiktokProfile = async(i)=>{
                                     )
                                     conditionBreak = 0
                                 }
-                                if(has_more==0||has_more==undefined){
+                                if(has_more==0||has_more==undefined||total==0||comments==undefined||comments==null){
                                     conditionBreak++
                                 }
                                 if(conditionBreak==2){
@@ -284,27 +296,27 @@ const  tiktokProfile = async(i)=>{
                             console.log(error)
                             logger2.error({error})
 
-                            logger.info({timestamp,message:`comment4:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy})
+                            logger.info({timestamp,message:`comment4:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined})
                         ;     
                     }    
             
-                try {
-                    await page.close()
-                    await browser.close()
-                } catch (error) {
-                    logger.error({timestamp,message:`comment5:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.proxy})
-                    done();     
-                }
+                // try {
+                //     await page.close()
+                //     await browser.close()
+                // } catch (error) {
+                //     logger.error({timestamp,message:`comment5:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.proxy})
+                //     done();     
+                // }
             } catch (error) {
                 logger2.error({error})
 
-                logger.info({timestamp,message:`comment6:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy})
-                try {
-                    await page.close()
-                    await browser.close()
-                } catch (error) {
-                    logger.error({timestamp,message:`comment7:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.proxy}) 
-                }
+                logger.info({timestamp,message:`comment6:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined})
+                // try {
+                //     await page.close()
+                //     await browser.close()
+                // } catch (error) {
+                //     logger.error({timestamp,message:`comment7:${job.data.urlVideo}| ${error}`,commentLength:undefined,cursor:undefined,has_more:undefined,urlPost:job.data.urlVideo,status_code:undefined,status_msg:undefined,proxy:proxy.proxy}) 
+                // }
             }  
                 done();     
             })
@@ -326,52 +338,27 @@ async function xttparams(query_str) {
         "base64"
     );
 }
-async function testApiReq({ userAgent,xTtParams, signed_url,proxy}) {
-    // const options = {
-    //   method: "GET",
-    //   timeout: 50000,
-
-    //   headers: {
-    //     "user-agent": userAgent,
-    //     // "x-tt-params": xTtParams,
-    //   },
-    //   proxy: {
-    //     host: "103.74.107.77",
-    //     protocol:"http",
-    //     port: 54589,
-    //     auth: {
-    //         username: 'ibyv0x2m',
-    //         password: 'iByV0x2m'
-    //       }
-    //     },
-    //   url: signed_url,
-    // }
-    if(Object.keys(proxy.proxy).length==0){
+async function testApiReq({ userAgent,xTtParams, signed_url,proxy,referer}) {
+    console.log(signed_url)
         const response = await axios(signed_url, {
+            // userAgent: new HttpsProxyAgent({
+            //   keepAlive: true,
+            //   keepAliveMsecs: 1000,
+            //   maxSockets: 256,
+            //   maxFreeSockets: 256,
+            //   scheduling: 'lifo',
+            //   proxy: proxy.proxy
+            // }),
             headers:{
                 "user-agent": userAgent,
+                "referer": referer,  
             }
           });
         return response
 
-    } else{
-        const response = await axios(signed_url, {
-            userAgent: new HttpsProxyAgent({
-              keepAlive: true,
-              keepAliveMsecs: 1000,
-              maxSockets: 256,
-              maxFreeSockets: 256,
-              scheduling: 'lifo',
-              proxy: proxy.proxy
-            }),
-            headers:{
-                "user-agent": userAgent,
-            }
-          });
-        return response
-    }
   
 }
+
 async function generateVerifyFp() {
     var e = Date.now();
     var t = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split(
