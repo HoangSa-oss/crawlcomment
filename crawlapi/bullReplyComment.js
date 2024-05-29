@@ -23,7 +23,7 @@ const addQueue = async  ()=>{
  
 }
 
-schedule(`*/30 * * * * *`, async() => {
+schedule(`*/10 * * * * *`, async() => {
     await addQueue()
     console.log(await queueCommentReply.count())
 });

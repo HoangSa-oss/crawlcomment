@@ -9,5 +9,6 @@ const profileSchema = new Schema({
     reply_id:String,
     cid:String,
     text:String,
+    postApi:Boolean
 }, { versionKey: false })
 export default model('commentreply',profileSchema);

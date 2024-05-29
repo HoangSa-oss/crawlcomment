@@ -11,5 +11,6 @@ const profileSchema = new Schema({
     reply_comment_total:Number,
     crawl_reply:Boolean,
     urlPost:String,
+    postApi:Boolean
 }, { versionKey: false })
 export default model('comment',profileSchema);
